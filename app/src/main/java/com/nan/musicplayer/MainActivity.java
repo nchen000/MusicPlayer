@@ -1,8 +1,18 @@
 package com.nan.musicplayer;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,6 +30,17 @@ public class MainActivity extends AppCompatActivity {
     MediaPlayer mp;
     int totalTime;
 
+    //keep track of current playing song
+    //changing currentId is OK
+    int currentId = R.raw.kai_engel_irsens_tale;
+    //Do not change currentUri
+    Uri currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + currentId);
+
+    String title = "";
+    String artist = "";
+
+    MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,8 +50,12 @@ public class MainActivity extends AppCompatActivity {
         elapsedTimeLabel = (TextView) findViewById(R.id.elapsedTimeLabel);
         remainingTimeLabel = (TextView) findViewById(R.id.remainingTimeLabel);
 
+        //initialize the notification bar
+        getSongDetail();
+        showNotification(title, artist);
+
         // Media Player
-        mp = MediaPlayer.create(this, R.raw.kai_engel_irsens_tale);
+        mp = MediaPlayer.create(this, currentId);
         mp.setLooping(true);
         mp.seekTo(0);
         mp.setVolume(0.5f, 0.5f);
@@ -135,12 +160,47 @@ public class MainActivity extends AppCompatActivity {
             // Stopping
             mp.start();
             playBtn.setBackgroundResource(R.drawable.stop);
+            getSongDetail();
 
         } else {
             // Playing
+            getSongDetail();
+            showNotification(title, artist);
             mp.pause();
             playBtn.setBackgroundResource(R.drawable.play);
         }
 
+    }
+
+    void showNotification(String title, String content) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        //notification channel required for Android 8.0 and higher
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("default",
+                    "music player",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            //turn off default notification sound
+            channel.setSound(null, null);
+            channel.setDescription("current playing music");
+            mNotificationManager.createNotificationChannel(channel);
+        }
+
+        //notification bar
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), "default")
+                .setSmallIcon(R.drawable.notification_icon) // notification icon
+                .setContentTitle(title) // title for notification
+                .setContentText(content);// message for notification
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(pi);
+        mNotificationManager.notify(0, mBuilder.build());
+    }
+
+    //retrieve current song's title and artist
+    void getSongDetail(){
+        mmr.setDataSource(this,currentUri);
+        title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
     }
 }
