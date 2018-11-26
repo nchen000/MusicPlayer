@@ -31,14 +31,13 @@ public class MainActivity extends AppCompatActivity {
     int totalTime;
 
     //keep track of current playing song
-    //changing currentId is OK
     int currentId = R.raw.kai_engel_irsens_tale;
-    //Do not change currentUri
     Uri currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + currentId);
 
     String title = "";
     String artist = "";
 
+    //object that retrieve current song's info
     MediaMetadataRetriever mmr = new MediaMetadataRetriever();
 
     @Override
