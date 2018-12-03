@@ -23,6 +23,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     Button playBtn;
+    Button repeatBtn;
     SeekBar positionBar;
     SeekBar volumeBar;
     TextView elapsedTimeLabel;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         playBtn = (Button) findViewById(R.id.playBtn);
+        repeatBtn = (Button) findViewById(R.id.repeatBtn);
         elapsedTimeLabel = (TextView) findViewById(R.id.elapsedTimeLabel);
         remainingTimeLabel = (TextView) findViewById(R.id.remainingTimeLabel);
 
@@ -169,6 +171,19 @@ public class MainActivity extends AppCompatActivity {
             playBtn.setBackgroundResource(R.drawable.play);
         }
 
+    }
+
+    public void repeatBtnClick(View view) {
+
+        if (!mp.isLooping()) {
+            repeatBtn.setBackgroundResource(R.drawable.repeaton);
+            mp.setLooping(true);
+
+        } else {
+            repeatBtn.setBackgroundResource(R.drawable.repeatoff);
+            mp.setLooping(false);
+
+        }
     }
 
     void showNotification(String title, String content) {
