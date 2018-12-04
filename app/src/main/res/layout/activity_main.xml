@@ -8,17 +8,27 @@
     android:orientation="vertical"
     tools:context="com.nan.musicplayer.MainActivity">
 
+    <TextView
+        android:id="@+id/currentSongLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="10dp"
+        style="@android:style/TextAppearance.Medium"
+        android:text="Irsens' Tale by Kai Engel" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="20dp"
         android:src="@drawable/image" />
 
     <SeekBar
         android:id="@+id/positionBar"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp" />
+        android:layout_marginTop="30dp"
+        />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,7 +52,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="49dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:gravity="center"
         android:orientation="horizontal">
 
