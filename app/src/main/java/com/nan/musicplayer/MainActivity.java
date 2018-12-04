@@ -20,6 +20,8 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
 
     Button playBtn;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     SeekBar volumeBar;
     TextView elapsedTimeLabel;
     TextView remainingTimeLabel;
+    TextView currentSongLabel;
     MediaPlayer mp;
     int totalTime;
 
@@ -50,16 +53,20 @@ public class MainActivity extends AppCompatActivity {
         repeatBtn = (Button) findViewById(R.id.repeatBtn);
         elapsedTimeLabel = (TextView) findViewById(R.id.elapsedTimeLabel);
         remainingTimeLabel = (TextView) findViewById(R.id.remainingTimeLabel);
+        currentSongLabel = (TextView) findViewById(R.id.currentSongLabel);
 
         //initialize the notification bar
         getSongDetail();
+
+        currentSongLabel.setText(title + " by " + artist);
+
         showNotification(title, artist);
 
         // Media Player
         mp = MediaPlayer.create(this, currentId);
-        mp.setLooping(true);
+        mp.setLooping(false);
         mp.seekTo(0);
-        mp.setVolume(0.5f, 0.5f);
+        mp.setVolume(0.0f, 1f);
         totalTime = mp.getDuration();
 
         // Position Bar
