@@ -19,12 +19,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import org.w3c.dom.Text;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {  //err
 
     Button playBtn;
+    ViewFlipper viewFlipper;
+    Button nextBtn;
     Button repeatBtn;
     SeekBar positionBar;
     SeekBar volumeBar;
@@ -48,13 +51,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper); //err
+        nextBtn = (Button) findViewById(R.id.nextBtn);
         playBtn = (Button) findViewById(R.id.playBtn);
         repeatBtn = (Button) findViewById(R.id.repeatBtn);
         elapsedTimeLabel = (TextView) findViewById(R.id.elapsedTimeLabel);
         remainingTimeLabel = (TextView) findViewById(R.id.remainingTimeLabel);
         currentSongLabel = (TextView) findViewById(R.id.currentSongLabel);
 
+
+       // nextBtn.setOnClickListener(this);// err
         //initialize the notification bar
         getSongDetail();
 
@@ -191,6 +197,10 @@ public class MainActivity extends AppCompatActivity {
             mp.setLooping(false);
 
         }
+    }
+
+    public void nextBtn(View view){
+        viewFlipper.showNext();
     }
 
     void showNotification(String title, String content) {
