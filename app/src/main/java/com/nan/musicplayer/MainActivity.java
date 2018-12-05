@@ -2,16 +2,12 @@ package com.nan.musicplayer;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,64 +15,88 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 
-import org.w3c.dom.Text;
+public class MainActivity extends AppCompatActivity{
 
-public class MainActivity extends AppCompatActivity {  //err
-
+    //Button
     Button playBtn;
-    ViewFlipper viewFlipper;
     Button nextBtn;
+    Button preBtn;
     Button repeatBtn;
+
+    //Bar
     SeekBar positionBar;
     SeekBar volumeBar;
+
+    //TextView
     TextView elapsedTimeLabel;
     TextView remainingTimeLabel;
     TextView currentSongLabel;
+
     MediaPlayer mp;
     int totalTime;
+    int songId[] = {R.raw.kai_engel_irsens_tale,
+            R.raw.kai_engel_nothing_lasts_forever, R.raw.kai_engel_changing_reality};
 
     //keep track of current playing song
-    int currentId = R.raw.kai_engel_irsens_tale;
-    Uri currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + currentId);
+    int currentId = 0;
+    Uri currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + songId[currentId]);
 
     String title = "";
     String artist = "";
 
-    //object that retrieve current song's info
+    //object that retrieve current song's information
     MediaMetadataRetriever mmr = new MediaMetadataRetriever();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper); //err
+
+        //button
         nextBtn = (Button) findViewById(R.id.nextBtn);
+        preBtn = (Button) findViewById(R.id.preBtn);
         playBtn = (Button) findViewById(R.id.playBtn);
         repeatBtn = (Button) findViewById(R.id.repeatBtn);
+
+        //textView
         elapsedTimeLabel = (TextView) findViewById(R.id.elapsedTimeLabel);
         remainingTimeLabel = (TextView) findViewById(R.id.remainingTimeLabel);
         currentSongLabel = (TextView) findViewById(R.id.currentSongLabel);
 
-
-       // nextBtn.setOnClickListener(this);// err
-        //initialize the notification bar
+        //get current song's title and artist
         getSongDetail();
 
-        currentSongLabel.setText(title + " by " + artist);
+        //display title and artist on the app
+        setSongLabel();
 
+        //display title and artist on notification bar
         showNotification(title, artist);
 
         // Media Player
-        mp = MediaPlayer.create(this, currentId);
+        mp = MediaPlayer.create(this, songId[currentId]);
         mp.setLooping(false);
         mp.seekTo(0);
         mp.setVolume(0.0f, 1f);
         totalTime = mp.getDuration();
 
+
         // Position Bar
         positionBar = (SeekBar) findViewById(R.id.positionBar);
+        setPositionBar();
+
+        // Volume Bar
+        volumeBar = (SeekBar) findViewById(R.id.volumeBar);
+        setVolumeBar();
+
+        // Thread (Update positionBar & timeLabel)
+        createThread();
+
+    }//end of onCreate
+
+    //-------------Helper function begins here----------
+
+    public void setPositionBar(){
         positionBar.setMax(totalTime);
         positionBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
@@ -100,9 +120,10 @@ public class MainActivity extends AppCompatActivity {  //err
                 }
         );
 
+    }
 
-        // Volume Bar
-        volumeBar = (SeekBar) findViewById(R.id.volumeBar);
+
+    public void setVolumeBar(){
         volumeBar.setOnSeekBarChangeListener(
                 new SeekBar.OnSeekBarChangeListener() {
                     @Override
@@ -122,8 +143,9 @@ public class MainActivity extends AppCompatActivity {  //err
                     }
                 }
         );
+    }
 
-        // Thread (Update positionBar & timeLabel)
+    private void createThread(){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -133,11 +155,11 @@ public class MainActivity extends AppCompatActivity {  //err
                         msg.what = mp.getCurrentPosition();
                         handler.sendMessage(msg);
                         Thread.sleep(1000);
-                    } catch (InterruptedException e) {}
+                    } catch (InterruptedException e) {
+                    }
                 }
             }
         }).start();
-
     }
 
     private Handler handler = new Handler() {
@@ -151,7 +173,7 @@ public class MainActivity extends AppCompatActivity {  //err
             String elapsedTime = createTimeLabel(currentPosition);
             elapsedTimeLabel.setText(elapsedTime);
 
-            String remainingTime = createTimeLabel(totalTime-currentPosition);
+            String remainingTime = createTimeLabel(totalTime - currentPosition);
             remainingTimeLabel.setText("- " + remainingTime);
         }
     };
@@ -167,7 +189,9 @@ public class MainActivity extends AppCompatActivity {  //err
 
         return timeLabel;
     }
+    //-------------Helper functions end here----------
 
+    //-------------Click functions for buttons begins here--------------
     public void playBtnClick(View view) {
 
         if (!mp.isPlaying()) {
@@ -186,21 +210,69 @@ public class MainActivity extends AppCompatActivity {  //err
 
     }
 
+    //next button
+    public void nextBtnClick(View view) {
+        mp.release();
+
+        if(currentId == songId.length-1) currentId = 0;
+        else ++currentId;
+
+        mp = MediaPlayer.create(this, songId[currentId]);
+        currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + songId[currentId]);
+        totalTime = mp.getDuration();
+
+        //update all the UI
+        getSongDetail();
+        setSongLabel();
+        showNotification(title, artist);
+        setPositionBar();
+        setVolumeBar();
+        createThread();
+
+        mp.start();
+    }
+
+    //previous button
+    public void preBtnClick(View view) {
+        mp.release();
+
+        if(currentId == 0) currentId = songId.length -1;
+        else --currentId;
+
+        mp = MediaPlayer.create(this, songId[currentId]);
+        currentUri = Uri.parse("android.resource://com.nan.musicplayer/" + songId[currentId]);
+        totalTime = mp.getDuration();
+
+        //update all the UI
+        getSongDetail();
+        setSongLabel();
+        showNotification(title, artist);
+        setPositionBar();
+        setVolumeBar();
+        createThread();
+
+        mp.start();
+    }
+
+    //repeat button
     public void repeatBtnClick(View view) {
 
         if (!mp.isLooping()) {
+            //looping
             repeatBtn.setBackgroundResource(R.drawable.repeaton);
             mp.setLooping(true);
 
         } else {
+            //not looping
             repeatBtn.setBackgroundResource(R.drawable.repeatoff);
             mp.setLooping(false);
 
         }
     }
+    //-------------Click functions for buttons ends here--------------
 
-    public void nextBtn(View view){
-        viewFlipper.showNext();
+    void setSongLabel(){
+        currentSongLabel.setText(title + " by " + artist);
     }
 
     void showNotification(String title, String content) {
@@ -222,15 +294,14 @@ public class MainActivity extends AppCompatActivity {  //err
                 .setSmallIcon(R.drawable.notification_icon) // notification icon
                 .setContentTitle(title) // title for notification
                 .setContentText(content);// message for notification
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(pi);
+
+        //send out the notification
         mNotificationManager.notify(0, mBuilder.build());
     }
 
     //retrieve current song's title and artist
-    void getSongDetail(){
-        mmr.setDataSource(this,currentUri);
+    void getSongDetail() {
+        mmr.setDataSource(this, currentUri);
         title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
     }
